@@ -1,11 +1,12 @@
 #include <efi.h>
 #include <efilib.h>
+#include <stdint.h>
 #include "bootinfo.h"
 
-static inline unsigned long long rdtsc(void) {
-    unsigned int lo, hi;
-    __asm__ volatile ("rdtsc" : "=a"(lo), "=d"(hi));
-    return ((unsigned long long)hi << 32) | lo;
+static inline uint64_t rdtsc(void) {
+    uint32_t lo, hi;
+    __asm__ volatile ("rdtsc" : "=a"(lo), "=d"(hi)); // Run the rdtsc instruction and store the lower 32 bits in lo and the upper 32 bits in hi
+    return ((uint64_t)hi << 32) | lo; // returns to the total number of cpu cycles since the computer turned on
 }
 
 
@@ -13,7 +14,7 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     InitializeLib(ImageHandle, SystemTable);
     EFI_STATUS status;
 
-    // 1. Get Graphics Output Protocol (GOP) for drawing
+    // Get Graphics Output Protocol (GOP) for drawing
     EFI_GUID gopGuid = EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
     EFI_GRAPHICS_OUTPUT_PROTOCOL *gop;
     status = uefi_call_wrapper(BS->LocateProtocol, 3, &gopGuid, NULL, (void**)&gop);
@@ -23,8 +24,9 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
         return status;
     }
 
-    UINTN bufferSize = gop->Mode->Info->HorizontalResolution * gop->Mode->Info->VerticalResolution * sizeof(unsigned int);
-    UINTN pagesNeeded = (bufferSize + 4095) / 4096;
+    // Calculate the required memory for a single display buffer
+    uint64_t bufferSize = gop->Mode->Info->HorizontalResolution * gop->Mode->Info->VerticalResolution * sizeof(unsigned int);
+    uint64_t pagesNeeded = (bufferSize + 4095) / 4096;
 
     EFI_PHYSICAL_ADDRESS backBufferAddress;
     status = uefi_call_wrapper(BS->AllocatePages, 4, AllocateAnyPages, EfiLoaderData, pagesNeeded, &backBufferAddress);
@@ -34,19 +36,12 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
         return status;
     }
 
-    UINTN pagesNeededForKenelData = 16;
-    EFI_PHYSICAL_ADDRESS kernelDataAddress;
-    status = uefi_call_wrapper(BS->AllocatePages, 4, AllocateAnyPages, EfiLoaderData, pagesNeededForKenelData, &kernelDataAddress);
-    if (EFI_ERROR(status)) {
-        Print(L"Failed to allocate safe Kernel workspace in memory\n");
-        return status;
-    }
-
+    // Calculate the number of cpu cyles that occur in a second
     unsigned long long tsc_start = rdtsc();
     uefi_call_wrapper(BS->Stall, 1, 100000);
     unsigned long long tsc_end = rdtsc();
 
-     // Get Memory Map 
+    // Get the required memory for the memory map
 
     UINTN originalMemoryMapSize = 0;
     EFI_MEMORY_DESCRIPTOR *memoryMap = NULL;
@@ -91,11 +86,11 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     BootInfo info;
     info.Framebuffer = (unsigned int*)gop->Mode->FrameBufferBase;
     info.BackBuffer = (unsigned int*)backBufferAddress;
+    info.backBufferSize = pagesNeeded * 4096;
     info.Width = gop->Mode->Info->HorizontalResolution;
     info.Height = gop->Mode->Info->VerticalResolution;
     info.PixelsPerScanLine = gop->Mode->Info->PixelsPerScanLine;
     info.CpuMhz = (tsc_end - tsc_start) / 100000;
-    info.KernelWorkspace = (unsigned char*)kernelDataAddress;
     info.memoryMap = (MemoryMapEntry*)memoryMap;
     info.memoryMapSize = memoryMapSize;
     info.descriptorSize = descriptorSize;
@@ -104,22 +99,16 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
 
    
 
-    // 3. Exit Boot Services (Crucial: Handing full control to our OS)
-    // In a production loader, you must fetch the memory map first.
+    // 3. Exit Boot Services 
 
-    // For this minimal example, we bypass checking the map key to jump straight to the kernel
     status = uefi_call_wrapper(BS->ExitBootServices, 2, ImageHandle, mapKey);
 
     if (EFI_ERROR(status)) {
         Print(L"Failed to exit boot services!\n");
         return status;
     }
-
-    // 4. Cast an arbitrary memory address where your kernel resides, or call it directly
-    // (For absolute simplicity, assume the kernel code is compiled directly with the loader or loaded manually)
-    void (*kernel_entry)(BootInfo*) = (void (*)(BootInfo*))0x100000; // Hypothetical kernel address
     
-    // For this single-file demonstration, we will just call our kernel function directly:
+    // Call the kernel
     extern void kernel_main(BootInfo* binfo);
     kernel_main(&info);
 

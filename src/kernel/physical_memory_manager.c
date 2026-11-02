@@ -32,7 +32,7 @@ void initialize_physical_memory_manager(BootInfo* binfo, physicalMemoryManager* 
     }
 }
 
-unsigned long long allocate_physical_page(physicalMemoryManager* manager) {
+uint64_t allocate_physical_page(physicalMemoryManager* manager) {
     unsigned long long pagePhysicalStart = 0;
     for (unsigned long long i = 0; i < manager->usableRegions; i++) {
         if (manager->memoryRegions[i].remainingPages > 0) {
@@ -55,7 +55,7 @@ unsigned long long allocate_physical_page(physicalMemoryManager* manager) {
     return pagePhysicalStart;
 }
 
-void free_physical_page(physicalMemoryManager* manager, unsigned long long physicalAddress) {
+void free_physical_page(physicalMemoryManager* manager, uint64_t physicalAddress) {
     if (physicalAddress % 4096 == 0) {
         for (unsigned long long i = 0; i < manager->usableRegions; i++) {
             unsigned long long physicalEnd = manager->memoryRegions[i].regionStart + (manager->memoryRegions[i].regionPages * 4096);
@@ -76,4 +76,8 @@ void free_physical_page(physicalMemoryManager* manager, unsigned long long physi
         
         }
     }
+}
+
+void reserve_physical_memory(physicalMemoryManager* manager, uint64_t physicalAddress, uint64_t sizeInBytes) {
+    uint64_t page = (sizeInBytes + 4095) / 4096;
 }

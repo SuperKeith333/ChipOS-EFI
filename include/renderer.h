@@ -3,11 +3,11 @@
 
 #include "bootinfo.h"
 
-// Expose global cursor variables
+
 extern unsigned int cursor_x;
 extern unsigned int cursor_y;
 
-// Function prototypes
+
 void kernel_blit(unsigned int* dest, unsigned int* src, unsigned long long pixel_count);
 void kernel_putchar(BootInfo* binfo, char c, unsigned int color);
 void kernel_print(BootInfo* binfo, const char* str, unsigned int color);

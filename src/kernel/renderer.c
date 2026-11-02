@@ -88,7 +88,7 @@ void kernel_draw_box(BootInfo* binfo, unsigned int x, unsigned int y, unsigned i
 // Prints an unsigned integer as a hexadecimal string (up to 64-bit values)
 void kernel_print_hex(BootInfo* binfo, unsigned long long value, unsigned int color) {
     char hex_digits[] = "0123456789ABCDEF";
-    char buffer[19]; // "0x" + 16 chars for 64-bit hex + null terminator
+    char buffer[19];
     
     buffer[0] = '0';
     buffer[1] = 'x';
@@ -103,33 +103,29 @@ void kernel_print_hex(BootInfo* binfo, unsigned long long value, unsigned int co
     kernel_print(binfo, buffer, color);
 }
 
-// Draws the 64x32 Chip-8 graphics matrix onto your OS backbuffer with an adjustable pixel scale factor
 void kernel_draw_chip8_screen(BootInfo* binfo, unsigned char* gfx, unsigned int start_x, unsigned int start_y, unsigned int scale, unsigned int pixel_color, unsigned int bg_color) {
     for (int y = 0; y < 32; y++) {
         for (int x = 0; x < 64; x++) {
-            // Read standard 1D flat chip8 array state (64 width step size)
             unsigned char pixel_state = gfx[x + (y * 64)];
             unsigned int current_color = pixel_state ? pixel_color : bg_color;
 
             // DRAW SCALED BLOCK
-            // Explicitly map the chip8 coordinates up to host sizes out-of-line
             unsigned int block_start_x = start_x + (x * scale);
             unsigned int block_start_y = start_y + (y * scale);
 
             for (unsigned int sy = 0; sy < scale; sy++) {
                 unsigned int dest_y = block_start_y + sy;
                 
-                // Keep performance clipped to monitor bounding layout boxes
+                // clip to monitor bounding layout boxes
                 if (dest_y >= binfo->Height) continue;
 
-                // Precompute row index using the motherboard's actual Hardware Scan Line Stride!
+                // Precompute row index using the motherboard's actual Hardware Scan Line Stride
                 unsigned long long row_offset = (unsigned long long)dest_y * binfo->PixelsPerScanLine;
 
                 for (unsigned int sx = 0; sx < scale; sx++) {
                     unsigned int dest_x = block_start_x + sx;
 
                     if (dest_x < binfo->Width) {
-                        // FIX: Linear 32-bit pixel array alignment calculation
                         binfo->BackBuffer[dest_x + row_offset] = current_color;
                     }
                 }
@@ -140,10 +136,9 @@ void kernel_draw_chip8_screen(BootInfo* binfo, unsigned char* gfx, unsigned int 
 
 
 
-// Prints an 8-bit unsigned value as a clean 2-digit hex string (e.g., 0xAB)
 void kernel_print_hex8(BootInfo* binfo, unsigned char value, unsigned int color) {
     char hex_digits[] = "0123456789ABCDEF";
-    char buffer[5]; // "0x" + 2 digits + null terminator
+    char buffer[5];
     
     buffer[0] = '0';
     buffer[1] = 'x';
@@ -154,10 +149,9 @@ void kernel_print_hex8(BootInfo* binfo, unsigned char value, unsigned int color)
     kernel_print(binfo, buffer, color);
 }
 
-// Prints a 16-bit unsigned value as a clean 4-digit hex string (e.g., 0x02D4)
 void kernel_print_hex16(BootInfo* binfo, unsigned short value, unsigned int color) {
     char hex_digits[] = "0123456789ABCDEF";
-    char buffer[7]; // "0x" + 4 digits + null terminator
+    char buffer[7];
     
     buffer[0] = '0';
     buffer[1] = 'x';
@@ -179,19 +173,18 @@ static inline unsigned char inb(unsigned short port) {
 
 // Non-blocking function: Returns the raw scancode if a key event is waiting, 0 otherwise
 unsigned char kernel_get_scancode(void) {
-    // Check Port 0x64 (Status Register). Bit 0 is set (1) if data is ready in the input buffer.
     if (inb(0x64) & 0x01) {
         return inb(0x60); // Read the scancode from Port 0x60
     }
     return 0;
 }
 
-// Low-level port out function (if not already defined in your files)
+// Low-level port out function
 static inline void outb(unsigned short port, unsigned char val) {
     __asm__ volatile ( "outb %0, %1" : : "a"(val), "Nd"(port) );
 }
 
-// Low-level port in function (if not already defined in your files)
+// Low-level port in function
 static inline unsigned char inb_speaker(unsigned short port) {
     unsigned char ret;
     __asm__ volatile ("inb %1, %0" : "=a"(ret) : "Nd"(port));

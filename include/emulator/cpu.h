@@ -1,19 +1,30 @@
 #ifndef CHIP8_CPU_H
 #define CHIP8_CPU_H
 
-// FIX: Force the compiler to pack every byte sequentially with ZERO structural padding gaps
-typedef struct __attribute__((packed)) {
-    unsigned char  memory[4096];  // 4KB of System RAM
-    unsigned char  V[16];         // 16 general-purpose 8-bit registers (V0 - VF)
-    unsigned short I;             // 16-bit Index Register
-    unsigned short pc;            // 16-bit Program Counter
-    unsigned short stack[16];     // Stack for subroutine addresses
-    unsigned char  sp;            // Stack Pointer
-    unsigned char  delay_timer;   // Delay Timer
-    unsigned char  sound_timer;   // Sound Timer
-    unsigned char  gfx[64 * 32];  // Display frame matrix
-    unsigned char  key[16];       // Keyboard inputs array
-    char lastKeyPressed;
+#include <stdint.h>
+
+typedef struct  
+{
+    uint8_t x;
+    uint8_t y;
+    uint8_t nibble;
+    _Bool active;
+} QueuedSprite;
+
+
+typedef struct {
+    uint8_t  memory[4096];  
+    uint8_t  V[16];  // Normal Registers (8-bit)
+    uint16_t I; // Index Register (16-bit)
+    uint16_t pc;  // Program Counter
+    uint16_t stack[16]; 
+    uint8_t  sp; // Stack Pointer
+    uint8_t  delay_timer;   // Delay Timer
+    uint8_t  sound_timer;   // Sound Timer
+    uint8_t  gfx[64 * 32];  // Display
+    uint8_t  key[16]; // Keyboard inputs
+    int lastKeyPressed;
+    _Bool drewSprite;
 } Chip8;
 
 void chip8_init(Chip8* c8);

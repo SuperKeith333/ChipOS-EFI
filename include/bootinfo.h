@@ -1,19 +1,20 @@
 #ifndef BOOTINFO_H
 #define BOOTINFO_H
 
+#include <stdint.h>
 #include "memory_map.h"
 
 typedef struct {
-    unsigned int* Framebuffer;
-    unsigned int* BackBuffer;
-    unsigned long long Width;
-    unsigned long long Height;
-    unsigned long long PixelsPerScanLine;
-    unsigned long long CpuMhz;
-    unsigned char* KernelWorkspace;
+    uint32_t* Framebuffer; // Also front buffer
+    uint32_t* BackBuffer;
+    uint64_t backBufferSize;
+    uint64_t Width; // width of screen
+    uint64_t Height; // height of the screen
+    uint64_t PixelsPerScanLine;
+    uint64_t CpuMhz;
     MemoryMapEntry* memoryMap;
-    unsigned long long memoryMapSize;
-    unsigned long long descriptorSize;
+    uint64_t memoryMapSize;
+    uint64_t descriptorSize;
 } BootInfo;
 
 #endif
