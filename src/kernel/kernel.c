@@ -1,6 +1,9 @@
+#include <stdint.h>
+
 #include "bootinfo.h"
 #include "renderer.h"
 #include "emulator/cpu.h"
+#include "physical_memory_manager.h"
 
 static inline unsigned long long rdtsc(void) {
     unsigned int lo, hi;
@@ -10,7 +13,16 @@ static inline unsigned long long rdtsc(void) {
 
 void kernel_main(BootInfo* binfo) {
     unsigned long long total_pixels = binfo->Height * binfo->PixelsPerScanLine;
-    
+
+    physicalMemoryManager phyMemoryManager;
+    initialize_physical_memory_manager(binfo, &phyMemoryManager);
+
+    unsigned long long pagesAllocated = 0;
+
+    while (allocate_physical_page(&phyMemoryManager) != 0) {
+        pagesAllocated++;
+    }
+
     // Core Engine Clocks
     unsigned long long cycles_per_screen_frame = 16666 * binfo->CpuMhz; // 60 FPS Frame
     unsigned long long cycles_per_second = 1000000 * binfo->CpuMhz;
@@ -192,6 +204,13 @@ void kernel_main(BootInfo* binfo) {
             kernel_draw_box(binfo, 60, 60, 1150, 640, 0x0050FF50);
             cursor_x = 550; cursor_y = 45;
             kernel_print(binfo, "--- CHOOSE A ROM TO RUN ---\n", 0x00FF00FF);
+
+            cursor_x = 550; cursor_y = 150;
+            kernel_print_int(binfo, pagesAllocated, 0x00FF00FF);
+
+            cursor_x = 550; cursor_y = 170;
+            kernel_print_int(binfo, phyMemoryManager.freePages, 0x00FF00FF);
+
         }
 
 

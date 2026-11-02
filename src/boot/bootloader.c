@@ -46,6 +46,47 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     uefi_call_wrapper(BS->Stall, 1, 100000);
     unsigned long long tsc_end = rdtsc();
 
+     // Get Memory Map 
+
+    UINTN originalMemoryMapSize = 0;
+    EFI_MEMORY_DESCRIPTOR *memoryMap = NULL;
+    UINTN mapKey = 0;
+    UINTN descriptorSize = 0;
+    UINT32 descriptorVersion = 0;
+
+    status = uefi_call_wrapper(BS->GetMemoryMap, 5, &originalMemoryMapSize, memoryMap, &mapKey, &descriptorSize, &descriptorVersion);
+
+    if (status != EFI_BUFFER_TOO_SMALL) {
+        Print(L"EFI buffer does not have its expected value!\n");
+        return status;
+    }
+
+    // Calculate the number of required memory pages
+
+    UINTN memoryMapBufferSizeInBytes = originalMemoryMapSize + (2 * descriptorSize);
+    UINTN memoryMapBufferSizeInPages = (memoryMapBufferSizeInBytes + 4095) / 4096;
+
+    EFI_PHYSICAL_ADDRESS memoryMapAddress;
+
+    status = uefi_call_wrapper(BS->AllocatePages, 4, AllocateAnyPages, EfiLoaderData, memoryMapBufferSizeInPages, &memoryMapAddress);
+
+    if (EFI_ERROR(status)) {
+        Print(L"Failed to allocate memory for the memory map!\n");
+        return status;
+    }
+
+    memoryMap = (EFI_MEMORY_DESCRIPTOR*)memoryMapAddress;
+
+    // Get the actually memory map address w/ the adjusted space
+
+    UINTN memoryMapSize = memoryMapBufferSizeInBytes;
+    status = uefi_call_wrapper(BS->GetMemoryMap, 5, &memoryMapSize, memoryMap, &mapKey, &descriptorSize, &descriptorVersion);
+
+    if (EFI_ERROR(status)) {
+        Print(L"Failed to get memory map!\n");
+        return status;
+    }
+
     // 2. Prepare boot info to pass to the kernel
     BootInfo info;
     info.Framebuffer = (unsigned int*)gop->Mode->FrameBufferBase;
@@ -55,16 +96,24 @@ EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
     info.PixelsPerScanLine = gop->Mode->Info->PixelsPerScanLine;
     info.CpuMhz = (tsc_end - tsc_start) / 100000;
     info.KernelWorkspace = (unsigned char*)kernelDataAddress;
+    info.memoryMap = (MemoryMapEntry*)memoryMap;
+    info.memoryMapSize = memoryMapSize;
+    info.descriptorSize = descriptorSize;
 
     if (info.CpuMhz == 0) info.CpuMhz = 2000;
 
-    Print(L"GOP Initialized. Exiting boot services and jumping to kernel...\n");
+   
 
     // 3. Exit Boot Services (Crucial: Handing full control to our OS)
     // In a production loader, you must fetch the memory map first.
-    UINTN MapKey = 0;
+
     // For this minimal example, we bypass checking the map key to jump straight to the kernel
-    uefi_call_wrapper(BS->ExitBootServices, 2, ImageHandle, MapKey);
+    status = uefi_call_wrapper(BS->ExitBootServices, 2, ImageHandle, mapKey);
+
+    if (EFI_ERROR(status)) {
+        Print(L"Failed to exit boot services!\n");
+        return status;
+    }
 
     // 4. Cast an arbitrary memory address where your kernel resides, or call it directly
     // (For absolute simplicity, assume the kernel code is compiled directly with the loader or loaded manually)
