@@ -34,6 +34,7 @@ OBJECTS = $(BUILD_DIR)/boot/bootloader.o \
           $(BUILD_DIR)/kernel/renderer.o \
           $(BUILD_DIR)/emulator/cpu.o \
           $(BUILD_DIR)/kernel/physical_memory_manager.o \
+          $(BUILD_DIR)/kernel/heap_allocator.o \
           $(BUILD_DIR)/font.o 
 # ... (keep all intermediate rules the same) ...
 

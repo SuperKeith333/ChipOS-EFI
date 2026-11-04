@@ -29,7 +29,9 @@ typedef struct {
 
 void initialize_physical_memory_manager(BootInfo* binfo, physicalMemoryManager* manager);
 void free_physical_page(physicalMemoryManager* manager, uint64_t physicalAddress);
+_Bool free_continuous_pages(physicalMemoryManager* manager, uint64_t physicalAddress, uint32_t pages);
 uint64_t allocate_physical_page(physicalMemoryManager* manager);
+uint64_t allocate_continuous_pages(physicalMemoryManager* manager, uint32_t pages);
 _Bool reserve_physical_memory(physicalMemoryManager* manager, uint64_t physicalAddress, uint64_t sizeInBytes);
 
 #endif

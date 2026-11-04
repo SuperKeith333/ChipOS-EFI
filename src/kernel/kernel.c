@@ -14,7 +14,9 @@ Chip8 c8;
 uint16_t panel_x = 900;
 _Bool runningChip8 = 0;
 
-uint64_t pagesAllocated = 0;
+uint64_t originalFreePages = 0;
+uint64_t startingAddress = 0;
+uint64_t endingAddress = 0;
 int framesPassed = 0;
 
 static inline uint64_t rdtsc(void) {
@@ -22,6 +24,14 @@ static inline uint64_t rdtsc(void) {
     __asm__ volatile ("rdtsc" : "=a"(lo), "=d"(hi)); // Run the rdtsc instruction and store the lower 32 bits in lo and the upper 32 bits in hi
     return ((uint64_t)hi << 32) | lo; // returns to the total number of cpu cycles since the computer turned on
 }
+
+static inline uint64_t readCr3(void) {
+    uint64_t result = 0;
+
+    __asm__ volatile ("mov %%cr3, %0" : "=r"(result));
+    return result;
+}
+
 
 void start() {
     chip8_init(&c8);
@@ -90,11 +100,8 @@ void draw(BootInfo* binfo) {
         cursor_x = 550; cursor_y = 45;
         kernel_print(binfo, "--- CHOOSE A ROM TO RUN ---\n", 0x00FF00FF);
 
-        cursor_x = 550; cursor_y = 150;
-        kernel_print_int(binfo, pagesAllocated, 0x00FF00FF);
-
-        cursor_x = 550; cursor_y = 170;
-        kernel_print_int(binfo, memoryManager.freePages, 0x00FF00FF);
+        cursor_x = 550; cursor_y = 190;
+        kernel_print_int(binfo, startingAddress, 0x00FF00FF);
     }
 }
 
@@ -178,9 +185,7 @@ void kernel_main(BootInfo* binfo) {
 
     initialize_physical_memory_manager(binfo, &memoryManager);
 
-    while (allocate_physical_page(&memoryManager) != 0) {
-        pagesAllocated++;
-    }
+    startingAddress = allocate_continuous_pages(&memoryManager, 3);
 
     uint64_t cycles_per_screen_frame = 16666 * binfo->CpuMhz; // 60 FPS Frame
     uint64_t cycles_per_second = 1000000 * binfo->CpuMhz;
