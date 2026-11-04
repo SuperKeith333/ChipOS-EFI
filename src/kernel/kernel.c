@@ -4,19 +4,25 @@
 #include "renderer.h"
 #include "emulator/cpu.h"
 #include "physical_memory_manager.h"
+#include "heap_allocator.h"
+#include "pci.h"
 
 
 const uint16_t OPCODES_PER_FRAME = 10; 
 
 physicalMemoryManager memoryManager;
+heap _heap;
 Chip8 c8;
 
 uint16_t panel_x = 900;
 _Bool runningChip8 = 0;
 
-uint64_t originalFreePages = 0;
-uint64_t startingAddress = 0;
-uint64_t endingAddress = 0;
+uint32_t* _16BitAddress = 0;
+uint32_t* _32BitAddress = 0;
+uint32_t* _64BitAddress = 0;
+uint32_t* _128BitAddress = 0;
+uint32_t* _256BitAddress = 0;
+uint32_t* _512BitAddress = 0;
 int framesPassed = 0;
 
 static inline uint64_t rdtsc(void) {
@@ -100,8 +106,7 @@ void draw(BootInfo* binfo) {
         cursor_x = 550; cursor_y = 45;
         kernel_print(binfo, "--- CHOOSE A ROM TO RUN ---\n", 0x00FF00FF);
 
-        cursor_x = 550; cursor_y = 190;
-        kernel_print_int(binfo, startingAddress, 0x00FF00FF);
+        pci_enumerate_all(binfo);
     }
 }
 
@@ -184,8 +189,20 @@ void kernel_main(BootInfo* binfo) {
     uint64_t total_pixels = binfo->Height * binfo->PixelsPerScanLine;
 
     initialize_physical_memory_manager(binfo, &memoryManager);
+    _Bool result = initialize_heap(&_heap, &memoryManager, 4096);
 
-    startingAddress = allocate_continuous_pages(&memoryManager, 3);
+    _16BitAddress = (uint32_t*)heap_allocate(&_heap, 16);
+    _32BitAddress = (uint32_t*)heap_allocate(&_heap, 32);
+    _64BitAddress = (uint32_t*)heap_allocate(&_heap, 64);
+    _128BitAddress = (uint32_t*)heap_allocate(&_heap, 128);
+    _256BitAddress = (uint32_t*)heap_allocate(&_heap, 256);
+    _512BitAddress = (uint32_t*)heap_allocate(&_heap, 512);
+
+    heap_free(&_heap, _16BitAddress);
+    heap_free(&_heap, _64BitAddress);
+    heap_free(&_heap, _256BitAddress);
+
+    _16BitAddress = (uint32_t*)heap_allocate(&_heap, 513);
 
     uint64_t cycles_per_screen_frame = 16666 * binfo->CpuMhz; // 60 FPS Frame
     uint64_t cycles_per_second = 1000000 * binfo->CpuMhz;

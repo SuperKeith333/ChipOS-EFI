@@ -1,5 +1,7 @@
 #include "renderer.h"
 
+#include "io.h"
+
 // Access font binary embedded by objcopy
 extern unsigned char _binary_font_bin_start[];
 
@@ -164,31 +166,12 @@ void kernel_print_hex16(BootInfo* binfo, unsigned short value, unsigned int colo
     kernel_print(binfo, buffer, color);
 }
 
-// Low-level assembly function to read a byte from an I/O port
-static inline unsigned char inb(unsigned short port) {
-    unsigned char ret;
-    __asm__ volatile ("inb %1, %0" : "=a"(ret) : "Nd"(port));
-    return ret;
-}
-
 // Non-blocking function: Returns the raw scancode if a key event is waiting, 0 otherwise
 unsigned char kernel_get_scancode(void) {
     if (inb(0x64) & 0x01) {
         return inb(0x60); // Read the scancode from Port 0x60
     }
     return 0;
-}
-
-// Low-level port out function
-static inline void outb(unsigned short port, unsigned char val) {
-    __asm__ volatile ( "outb %0, %1" : : "a"(val), "Nd"(port) );
-}
-
-// Low-level port in function
-static inline unsigned char inb_speaker(unsigned short port) {
-    unsigned char ret;
-    __asm__ volatile ("inb %1, %0" : "=a"(ret) : "Nd"(port));
-    return ret;
 }
 
 // Play a tone at a specific frequency (e.g., 440 Hz)
@@ -205,7 +188,7 @@ void kernel_play_sound(unsigned int frequency) {
     outb(0x42, (unsigned char) ((div >> 8) & 0xFF)); // High byte
 
     // Read the current PC speaker status port
-    tmp = inb_speaker(0x61);
+    tmp = inb(0x61);
     
     // Set bits 0 and 1 to turn on PIT channel 2 output and connect it to the speaker
     if (tmp != (tmp | 3)) {
@@ -215,6 +198,6 @@ void kernel_play_sound(unsigned int frequency) {
 
 // Turn off the PC speaker entirely
 void kernel_stop_sound(void) {
-    unsigned char tmp = inb_speaker(0x61);
+    unsigned char tmp = inb(0x61);
     outb(0x61, tmp & 0xFC); // Clear bits 0 and 1
 }

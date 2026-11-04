@@ -21,5 +21,7 @@ typedef struct {
 } heap;
 
 _Bool initialize_heap(heap* heap, physicalMemoryManager* memoryManager, uint32_t size);
+void* heap_allocate(heap* _heap, uint32_t size);
+_Bool heap_free(heap* _heap, void* address);
 
 #endif

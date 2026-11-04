@@ -28,7 +28,6 @@ LDFLAGS = -nostdlib \
 
 TARGET = BOOTX64.EFI
 
-# 1. Update the objects tracking string to look inside 'emulator'
 OBJECTS = $(BUILD_DIR)/boot/bootloader.o \
           $(BUILD_DIR)/kernel/kernel.o \
           $(BUILD_DIR)/kernel/renderer.o \
@@ -36,9 +35,6 @@ OBJECTS = $(BUILD_DIR)/boot/bootloader.o \
           $(BUILD_DIR)/kernel/physical_memory_manager.o \
           $(BUILD_DIR)/kernel/heap_allocator.o \
           $(BUILD_DIR)/font.o 
-# ... (keep all intermediate rules the same) ...
-
-# 2. Update the directory creation and compiler target rule for the emulator
 
 
 
@@ -77,12 +73,14 @@ $(TARGET): $(BUILD_DIR)/main.so
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
-# Updated QEMU run command enabling host audio emulation
 run: $(TARGET)
 	mkdir -p $(EFI_BOOT)
 	cp $(TARGET) $(EFI_BOOT)/
-	qemu-system-x86_64 -bios /usr/share/edk2-ovmf/x64/OVMF.4m.fd \
-	                   -drive format=raw,file=fat:rw:$(ISO_DIR) \
+	qemu-system-x86_64 -machine q35 \
+						-bios /usr/share/edk2-ovmf/x64/OVMF.4m.fd \
+	                    -drive if=none,id=disk0,format=raw,file=fat:rw:$(ISO_DIR) \
+						-device ich9-ahci,id=ahci \
+						-device ide-hd,drive=disk0,bus=ahci.0 \
 	                   -net none \
 	                   -audiodev driver=pa,id=snd0 -machine pcspk-audiodev=snd0
 
