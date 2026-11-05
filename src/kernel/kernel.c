@@ -7,6 +7,7 @@
 #include "heap_allocator.h"
 #include "pci.h"
 #include "drivers/storage/ahci.h"
+#include "io.h"
 
 const uint16_t OPCODES_PER_FRAME = 10; 
 
@@ -25,20 +26,6 @@ uint32_t* _128BitAddress = 0;
 uint32_t* _256BitAddress = 0;
 uint32_t* _512BitAddress = 0;
 int framesPassed = 0;
-
-static inline uint64_t rdtsc(void) {
-    uint32_t lo, hi;
-    __asm__ volatile ("rdtsc" : "=a"(lo), "=d"(hi)); // Run the rdtsc instruction and store the lower 32 bits in lo and the upper 32 bits in hi
-    return ((uint64_t)hi << 32) | lo; // returns to the total number of cpu cycles since the computer turned on
-}
-
-static inline uint64_t readCr3(void) {
-    uint64_t result = 0;
-
-    __asm__ volatile ("mov %%cr3, %0" : "=r"(result));
-    return result;
-}
-
 
 void start() {
     chip8_init(&c8);
@@ -107,9 +94,29 @@ void draw(BootInfo* binfo) {
         cursor_x = 550; cursor_y = 45;
         kernel_print(binfo, "--- CHOOSE A ROM TO RUN ---\n", 0x00FF00FF);
 
-        uint32_t bar5 = (pci_read_config(deviceInfo.bus, deviceInfo.device, deviceInfo.function, 0x24) & 0x6) >> 1;
+        uint32_t bar5 = pci_read_config(deviceInfo.bus, deviceInfo.device, deviceInfo.function, 0x24);
+        uint32_t mmioBaseAddress = pci_read_config(deviceInfo.bus, deviceInfo.device, deviceInfo.function, 0x24) & ~0xF;
+        uint32_t pml4Index = (mmioBaseAddress >> 39) & 0x1FF;
+        uint32_t pdptIndex = (mmioBaseAddress >> 30) & 0x1FF;
+        uint32_t pageDirectoryIndex = (mmioBaseAddress >> 21) & 0x1FF;
+        uint32_t pageTableIndex = (mmioBaseAddress >> 12) & 0x1FF;
+
+        uint64_t pmlBaseAddress = readCr3() & ~0xFFF;
+
         cursor_x = 550; cursor_y = 90;
-        kernel_print_int(binfo, bar5, 0x00FF00FF);
+        unsigned long long numberOfDescriptors = binfo->memoryMapSize / binfo->descriptorSize;
+        for (unsigned long long  i = 0; i < numberOfDescriptors; i++) {
+            unsigned char* memoryMapInBytes = ((unsigned char*)binfo->memoryMap) + (i * binfo->descriptorSize);
+            MemoryMapEntry* adjustedMemoryMap = (MemoryMapEntry*)memoryMapInBytes;
+
+            kernel_print_int(binfo, adjustedMemoryMap->physicalStart, 0x00FF00FF);
+            cursor_y += 1;
+            if (adjustedMemoryMap->type == 7 && adjustedMemoryMap->physicalStart <= 0x07410000 && adjustedMemoryMap->physicalStart + (adjustedMemoryMap->numberOfPages * 4096) > 0x07410000) {
+                
+            }
+        }
+        // cursor_x = 550; cursor_y = 90;
+        // kernel_print_int(binfo, pmlBaseAddress, 0x00FF00FF);
     }
 }
 

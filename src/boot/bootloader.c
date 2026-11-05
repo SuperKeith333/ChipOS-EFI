@@ -2,12 +2,7 @@
 #include <efilib.h>
 #include <stdint.h>
 #include "bootinfo.h"
-
-static inline uint64_t rdtsc(void) {
-    uint32_t lo, hi;
-    __asm__ volatile ("rdtsc" : "=a"(lo), "=d"(hi)); // Run the rdtsc instruction and store the lower 32 bits in lo and the upper 32 bits in hi
-    return ((uint64_t)hi << 32) | lo; // returns to the total number of cpu cycles since the computer turned on
-}
+#include "io.h"
 
 
 EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable) {
