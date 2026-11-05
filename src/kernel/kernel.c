@@ -6,12 +6,13 @@
 #include "physical_memory_manager.h"
 #include "heap_allocator.h"
 #include "pci.h"
-
+#include "drivers/storage/ahci.h"
 
 const uint16_t OPCODES_PER_FRAME = 10; 
 
 physicalMemoryManager memoryManager;
 heap _heap;
+pciDeviceInfo deviceInfo;
 Chip8 c8;
 
 uint16_t panel_x = 900;
@@ -106,7 +107,9 @@ void draw(BootInfo* binfo) {
         cursor_x = 550; cursor_y = 45;
         kernel_print(binfo, "--- CHOOSE A ROM TO RUN ---\n", 0x00FF00FF);
 
-        pci_enumerate_all(binfo);
+        uint32_t bar5 = (pci_read_config(deviceInfo.bus, deviceInfo.device, deviceInfo.function, 0x24) & 0x6) >> 1;
+        cursor_x = 550; cursor_y = 90;
+        kernel_print_int(binfo, bar5, 0x00FF00FF);
     }
 }
 
@@ -203,6 +206,9 @@ void kernel_main(BootInfo* binfo) {
     heap_free(&_heap, _256BitAddress);
 
     _16BitAddress = (uint32_t*)heap_allocate(&_heap, 513);
+
+    pci_enumerate_all(&deviceInfo);
+    ahci_initialize(&deviceInfo);
 
     uint64_t cycles_per_screen_frame = 16666 * binfo->CpuMhz; // 60 FPS Frame
     uint64_t cycles_per_second = 1000000 * binfo->CpuMhz;

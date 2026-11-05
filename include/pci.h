@@ -22,8 +22,7 @@ static inline uint32_t pci_read_config(uint8_t bus, uint8_t device, uint8_t func
     return inl(0xCFC);
 }
 
-static inline void pci_enumerate_bus(uint8_t bus, BootInfo* binfo, pciDeviceInfo* deviceInfo) {
-    deviceInfo->foundDevice = 0;
+static inline void pci_enumerate_bus(uint8_t bus, pciDeviceInfo* deviceInfo) {
     for (uint8_t device = 0; device < 32; device++) {
         uint32_t config = pci_read_config(bus, device, 0, 0x00);
         uint16_t vendorID = config & 0xFFFF;
@@ -114,24 +113,37 @@ static inline void pci_enumerate_bus(uint8_t bus, BootInfo* binfo, pciDeviceInfo
     }
 }
 
-static inline void pci_enumerate_all(BootInfo* binfo) {
+static inline void pci_enumerate_all(pciDeviceInfo* deviceInfo) {
     cursor_y = 190;
     cursor_x = 550;
-    pciDeviceInfo deviceInfo;
+    deviceInfo->foundDevice = 0;
 
     for (uint16_t i = 0; i < 256; i++) {
-        pci_enumerate_bus(i, binfo, &deviceInfo);
-        if (deviceInfo.foundDevice) {
+        pci_enumerate_bus(i, deviceInfo);
+        if (deviceInfo->foundDevice) {
             break;
         }
     }
 
-    kernel_print_int(binfo, deviceInfo, 0x00FF00FF);
-    cursor_x += 20;
-    kernel_print_int(binfo, subClass, 0x00FF00FF);
-    cursor_x += 20;
-    kernel_print_int(binfo, programInterface, 0x00FF00FF);
-    cursor_y += 20;
+    uint32_t bar5 = pci_read_config(deviceInfo->bus, deviceInfo->device, deviceInfo->function, 0x24);
+    uint32_t pciMemorySpaceDecoding = pci_read_config(deviceInfo->bus, deviceInfo->device, deviceInfo->function, 0x04) & 0xFFFF;
+
+    // kernel_print_int(binfo, deviceInfo.bus, 0x00FF00FF);
+    // cursor_x += 20;
+    // kernel_print_int(binfo, deviceInfo.device, 0x00FF00FF);
+    // cursor_x += 20;
+    // kernel_print_int(binfo, deviceInfo.function, 0x00FF00FF);
+    // cursor_x += 20;
+    // kernel_print_hex(binfo, bar5, 0x00FF00FF);
+    // cursor_x += 80;
+    // kernel_print_int(binfo, pciMemorySpaceDecoding & 0x2, 0x00FF00FF);
+
+    if (pciMemorySpaceDecoding & 0x2) {
+        if (pciMemorySpaceDecoding & 0x4) {
+            cursor_x += 20;
+            // kernel_print(binfo, "Memory Space Decoding Enabled!", 0x00FF00FF);
+        }
+    }
 }
 
 #endif

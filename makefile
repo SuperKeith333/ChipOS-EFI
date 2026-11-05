@@ -34,6 +34,7 @@ OBJECTS = $(BUILD_DIR)/boot/bootloader.o \
           $(BUILD_DIR)/emulator/cpu.o \
           $(BUILD_DIR)/kernel/physical_memory_manager.o \
           $(BUILD_DIR)/kernel/heap_allocator.o \
+          $(BUILD_DIR)/drivers/storage/ahci.o \
           $(BUILD_DIR)/font.o 
 
 
@@ -57,6 +58,10 @@ $(BUILD_DIR)/kernel/%.o: src/kernel/%.c | $(BUILD_DIR)
 
 $(BUILD_DIR)/emulator/%.o: src/emulator/%.c | $(BUILD_DIR)
 	mkdir -p $(BUILD_DIR)/emulator
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BUILD_DIR)/drivers/storage/%.o: src/drivers/storage/%.c | $(BUILD_DIR)
+	mkdir -p $(BUILD_DIR)/drivers/storage
 	$(CC) $(CFLAGS) -c $< -o $@
 
 $(BUILD_DIR)/main.so: $(OBJECTS)
