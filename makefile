@@ -9,11 +9,14 @@ EFI_BOOT  = $(ISO_DIR)/EFI/BOOT
 CFLAGS  = -I/usr/include/efi \
           -I/usr/include/efi/x86_64 \
           -I./include \
+          -I./third_party/fatfs \
           -fpic \
           -ffreestanding \
           -fno-stack-protector \
           -fno-stack-check \
           -fshort-wchar \
+		  -MMD \
+		  -MP \
           -mno-red-zone \
           -maccumulate-outgoing-args \
           -O2
@@ -35,6 +38,10 @@ OBJECTS = $(BUILD_DIR)/boot/bootloader.o \
           $(BUILD_DIR)/kernel/physical_memory_manager.o \
           $(BUILD_DIR)/kernel/heap_allocator.o \
           $(BUILD_DIR)/drivers/storage/ahci.o \
+          $(BUILD_DIR)/drivers/storage/diskio.o \
+          $(BUILD_DIR)/drivers/storage/sdhci.o \
+          $(BUILD_DIR)/third_party/fatfs/ff.o \
+          $(BUILD_DIR)/third_party/fatfs/ffunicode.o \
           $(BUILD_DIR)/font.o 
 
 
@@ -60,6 +67,10 @@ $(BUILD_DIR)/emulator/%.o: src/emulator/%.c | $(BUILD_DIR)
 	mkdir -p $(BUILD_DIR)/emulator
 	$(CC) $(CFLAGS) -c $< -o $@
 
+$(BUILD_DIR)/third_party/fatfs/%.o: third_party/fatfs/%.c | $(BUILD_DIR)
+	mkdir -p $(BUILD_DIR)/third_party/fatfs
+	$(CC) $(CFLAGS) -c $< -o $@
+
 $(BUILD_DIR)/drivers/storage/%.o: src/drivers/storage/%.c | $(BUILD_DIR)
 	mkdir -p $(BUILD_DIR)/drivers/storage
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -78,6 +89,8 @@ $(TARGET): $(BUILD_DIR)/main.so
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
+-include $(OBJECTS:.o=.d)
+
 run: $(TARGET)
 	mkdir -p $(EFI_BOOT)
 	cp $(TARGET) $(EFI_BOOT)/
@@ -87,7 +100,10 @@ run: $(TARGET)
 						-device ich9-ahci,id=ahci \
 						-device ide-hd,drive=disk0,bus=ahci.0 \
 	                   -net none \
-	                   -audiodev driver=pa,id=snd0 -machine pcspk-audiodev=snd0
+	                   -audiodev driver=pa,id=snd0 -machine pcspk-audiodev=snd0 \
+					   -device sdhci-pci,id=sdhci \
+						-drive if=none,id=sd0,format=raw,file=sdcard.img \
+						-device sd-card,drive=sd0,bus=sd-bus
 
 
 clean:

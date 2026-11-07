@@ -7,13 +7,17 @@
 #include "heap_allocator.h"
 #include "pci.h"
 #include "drivers/storage/ahci.h"
+#include "drivers/storage/block_device.h"
+#include "drivers/storage/diskio_adapter.h"
 #include "io.h"
+#include "drivers/storage/sdhci.h"
 
 const uint16_t OPCODES_PER_FRAME = 10; 
 
 physicalMemoryManager memoryManager;
 heap _heap;
 pciDeviceInfo deviceInfo;
+BlockDevice blockDevice;
 Chip8 c8;
 
 uint16_t panel_x = 900;
@@ -25,7 +29,11 @@ uint32_t* _64BitAddress = 0;
 uint32_t* _128BitAddress = 0;
 uint32_t* _256BitAddress = 0;
 uint32_t* _512BitAddress = 0;
+_Bool ahciInitialized = 0;
 int framesPassed = 0;
+
+uint8_t baseClass;
+uint8_t subClass;
 
 void start() {
     chip8_init(&c8);
@@ -95,28 +103,35 @@ void draw(BootInfo* binfo) {
         kernel_print(binfo, "--- CHOOSE A ROM TO RUN ---\n", 0x00FF00FF);
 
         uint32_t bar5 = pci_read_config(deviceInfo.bus, deviceInfo.device, deviceInfo.function, 0x24);
-        uint32_t mmioBaseAddress = pci_read_config(deviceInfo.bus, deviceInfo.device, deviceInfo.function, 0x24) & ~0xF;
-        uint32_t pml4Index = (mmioBaseAddress >> 39) & 0x1FF;
-        uint32_t pdptIndex = (mmioBaseAddress >> 30) & 0x1FF;
-        uint32_t pageDirectoryIndex = (mmioBaseAddress >> 21) & 0x1FF;
-        uint32_t pageTableIndex = (mmioBaseAddress >> 12) & 0x1FF;
+        uint32_t mmioBaseAddress = bar5 & ~0xF;
+        // uint32_t pml4Index = (mmioBaseAddress >> 39) & 0x1FF;
+        // uint32_t pdptIndex = (mmioBaseAddress >> 30) & 0x1FF;
+        // uint32_t pageDirectoryIndex = (mmioBaseAddress >> 21) & 0x1FF;
+        // uint32_t pageTableIndex = (mmioBaseAddress >> 12) & 0x1FF;
+        // uint64_t pmlBaseAddress = readCr3();
 
-        uint64_t pmlBaseAddress = readCr3() & ~0xFFF;
+        volatile hbaMem* _hbaMem = (hbaMem*)mmioBaseAddress;
+
+        uint32_t _cap = _hbaMem->cap;
+        uint32_t _pi = _hbaMem->pi;
+
+        uint32_t bar0 = pci_read_config(deviceInfo.bus, deviceInfo.device, deviceInfo.function, 0x10);
+        volatile uint32_t* presentStateRegAddr = (uint32_t*)(bar0 + 0x24);
+        volatile uint32_t* capabilitiesRegAddr = (uint32_t*)(bar0 + 0x40);
+        volatile uint32_t* controlClockRegAddr = (uint32_t*)(bar0 + 0x2C);
+        volatile uint32_t* powerControllRegAddr = (uint32_t*)(bar0 + 0x29);
 
         cursor_x = 550; cursor_y = 90;
-        unsigned long long numberOfDescriptors = binfo->memoryMapSize / binfo->descriptorSize;
-        for (unsigned long long  i = 0; i < numberOfDescriptors; i++) {
-            unsigned char* memoryMapInBytes = ((unsigned char*)binfo->memoryMap) + (i * binfo->descriptorSize);
-            MemoryMapEntry* adjustedMemoryMap = (MemoryMapEntry*)memoryMapInBytes;
+        kernel_print_hex(binfo, *presentStateRegAddr, 0x00FF00FF);
+        cursor_x = 550; cursor_y = 110;
+        kernel_print_int(binfo, subClass, 0x00FF00FF);
 
-            kernel_print_int(binfo, adjustedMemoryMap->physicalStart, 0x00FF00FF);
-            cursor_y += 1;
-            if (adjustedMemoryMap->type == 7 && adjustedMemoryMap->physicalStart <= 0x07410000 && adjustedMemoryMap->physicalStart + (adjustedMemoryMap->numberOfPages * 4096) > 0x07410000) {
-                
-            }
-        }
-        // cursor_x = 550; cursor_y = 90;
-        // kernel_print_int(binfo, pmlBaseAddress, 0x00FF00FF);
+        // for (uint8_t i = 0; i < 16; i++) {
+        //     cursor_x = 550; cursor_y += 20;
+        //     kernel_print_int(binfo, ((uint16_t*)565248)[i], 0x00FF00FF);
+        // }
+        // cursor_x = 600; cursor_y = 130;
+        // kernel_print_int(binfo, _databaseAddress, 0x00FF00FF);
     }
 }
 
@@ -215,7 +230,18 @@ void kernel_main(BootInfo* binfo) {
     _16BitAddress = (uint32_t*)heap_allocate(&_heap, 513);
 
     pci_enumerate_all(&deviceInfo);
-    ahci_initialize(&deviceInfo);
+
+    uint32_t config = pci_read_config(deviceInfo.bus, deviceInfo.device, deviceInfo.function, 0x08);
+    baseClass = (config >> 24) & 0xFF;
+    subClass = (config >> 16) & 0xFF;
+
+    ahciInitialized = sdhci_initialize(&deviceInfo, &blockDevice);
+
+    // ahciInitialized = ahci_initialize(&deviceInfo, &memoryManager, &blockDevice);
+
+    // if (ahci_initialize) {
+    //     diskio_set_device(&blockDevice);
+    // }
 
     uint64_t cycles_per_screen_frame = 16666 * binfo->CpuMhz; // 60 FPS Frame
     uint64_t cycles_per_second = 1000000 * binfo->CpuMhz;

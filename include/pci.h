@@ -55,7 +55,7 @@ static inline void pci_enumerate_bus(uint8_t bus, pciDeviceInfo* deviceInfo) {
                     uint32_t funcHeaderConfig = pci_read_config(bus, device, i, 0x0C);
                     uint8_t funcHeaderType = (funcHeaderConfig >> 16) & 0xFF;
 
-                    if (funcBaseClass == 1 && funcProgramInterface == 1 && funcSubClass == 6) {
+                    if (funcDeviceID == 0x0007 && funcVendorID == 0x1B36) {
                         deviceInfo->bus = bus;
                         deviceInfo->device = device;
                         deviceInfo->function = i;
@@ -90,7 +90,7 @@ static inline void pci_enumerate_bus(uint8_t bus, pciDeviceInfo* deviceInfo) {
                 cursor_y = lastY;
             }
 
-            if (baseClass == 1 && programInterface == 1 && subClass == 6) {
+            if (deviceID == 0x0007 && vendorID == 0x1B36) {
                 deviceInfo->bus = bus;
                 deviceInfo->device = device;
                 deviceInfo->function = 0;
