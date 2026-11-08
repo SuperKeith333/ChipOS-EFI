@@ -51,25 +51,25 @@ DRESULT disk_read (BYTE pdrv, BYTE* buff, LBA_t sector, UINT count) {
     BlockDeviceStatus _blockDeviceStatus = _blockDevice->read_sectors(_blockDevice->context, sector, count, buff);
 
     switch (_blockDeviceStatus) {
-        case SUCCESS:
+        case BLOCK_DEVICE_SUCCESS:
             return RES_OK;
             break;
-        case DEVICE_ERROR:
+        case BLOCK_DEVICE_DEVICE_ERROR:
             return RES_ERROR;
             break;
-        case DEVICE_NOT_READY:
+        case BLOCK_DEVICE_DEVICE_NOT_READY:
             return RES_NOTRDY;
             break;
-        case INVALID_LBA:
+        case BLOCK_DEVICE_INVALID_LBA:
             return RES_PARERR;
             break;
-        case INVALID_ARGUMENT:
+        case BLOCK_DEVICE_INVALID_ARGUMENT:
             return RES_PARERR;
             break;
-        case TIMEOUT:
+        case BLOCK_DEVICE_TIMEOUT:
             return RES_ERROR;
             break;
-        case IO_ERROR:
+        case BLOCK_DEVICE_IO_ERROR:
             return RES_ERROR;
             break;
         default:

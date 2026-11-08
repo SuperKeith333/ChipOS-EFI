@@ -103,8 +103,8 @@ run: $(TARGET)
 	                   -audiodev driver=pa,id=snd0 -machine pcspk-audiodev=snd0 \
 					   -device sdhci-pci,id=sdhci \
 						-drive if=none,id=sd0,format=raw,file=sdcard.img \
-						-device sd-card,drive=sd0,bus=sd-bus
-
+						-device sd-card,drive=sd0,bus=sd-bus \
+						-trace 'sdhci_*' 2> sdhci.log
 
 clean:
 	rm -rf $(BUILD_DIR) $(TARGET)

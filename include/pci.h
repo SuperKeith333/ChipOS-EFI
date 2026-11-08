@@ -39,7 +39,6 @@ static inline void pci_enumerate_bus(uint8_t bus, pciDeviceInfo* deviceInfo) {
             uint8_t headerType = (headerConfig >> 16) & 0xFF;
             
             if (headerType & 0x80) {
-                uint8_t lastY = cursor_y;
                 for (uint8_t i = 1; i < 8; i++) {
                     uint32_t funcConfig = pci_read_config(bus, device, i, 0x00);
                     uint16_t funcVendorID = funcConfig & 0xFFFF;
@@ -62,32 +61,7 @@ static inline void pci_enumerate_bus(uint8_t bus, pciDeviceInfo* deviceInfo) {
                         deviceInfo->foundDevice = 1;
                         return;
                     }
-
-                    uint8_t lastX = cursor_x;
-
-                    // cursor_x = 550;
-                    // kernel_print_int(binfo, bus, 0x00FF00FF);
-                    // cursor_x += 20;
-                    // kernel_print_int(binfo, device, 0x00FF00FF);
-                    // cursor_x += 20;
-                    // kernel_print_int(binfo, i, 0x00FF00FF);
-                    // cursor_x += 20;
-                    // kernel_print_int(binfo, funcVendorID, 0x00FF00FF);
-                    // cursor_x += 20;
-                    // kernel_print_int(binfo, funcDeviceID, 0x00FF00FF);
-                    // cursor_x += 20;
-                    // kernel_print_int(binfo, funcBaseClass, 0x00FF00FF);
-                    // cursor_x += 20;
-                    // kernel_print_int(binfo, funcSubClass, 0x00FF00FF);
-                    // cursor_x += 20;
-                    // kernel_print_int(binfo, funcProgramInterface, 0x00FF00FF);
-                    // cursor_x += 20;
-                    // kernel_print_int(binfo, funcHeaderType & 0x80, 0x00FF00FF);
-                    // cursor_x = lastX;
-                    // cursor_y += 20;
                 }
-
-                cursor_y = lastY;
             }
 
             if (deviceID == 0x0007 && vendorID == 0x1B36) {
@@ -97,18 +71,6 @@ static inline void pci_enumerate_bus(uint8_t bus, pciDeviceInfo* deviceInfo) {
                 deviceInfo->foundDevice = 1;
                 return;
             }
-            
-            // cursor_x = 20;
-            // kernel_print_int(binfo, deviceID, 0x00FF00FF);
-            // cursor_x += 20;
-            // kernel_print_int(binfo, vendorID, 0x00FF00FF);
-            // cursor_x += 20;
-            // kernel_print_int(binfo, baseClass, 0x00FF00FF);
-            // cursor_x += 20;
-            // kernel_print_int(binfo, subClass, 0x00FF00FF);
-            // cursor_x += 20;
-            // kernel_print_int(binfo, programInterface, 0x00FF00FF);
-            // cursor_y += 20;
         }
     }
 }
@@ -122,26 +84,6 @@ static inline void pci_enumerate_all(pciDeviceInfo* deviceInfo) {
         pci_enumerate_bus(i, deviceInfo);
         if (deviceInfo->foundDevice) {
             break;
-        }
-    }
-
-    uint32_t bar5 = pci_read_config(deviceInfo->bus, deviceInfo->device, deviceInfo->function, 0x24);
-    uint32_t pciMemorySpaceDecoding = pci_read_config(deviceInfo->bus, deviceInfo->device, deviceInfo->function, 0x04) & 0xFFFF;
-
-    // kernel_print_int(binfo, deviceInfo.bus, 0x00FF00FF);
-    // cursor_x += 20;
-    // kernel_print_int(binfo, deviceInfo.device, 0x00FF00FF);
-    // cursor_x += 20;
-    // kernel_print_int(binfo, deviceInfo.function, 0x00FF00FF);
-    // cursor_x += 20;
-    // kernel_print_hex(binfo, bar5, 0x00FF00FF);
-    // cursor_x += 80;
-    // kernel_print_int(binfo, pciMemorySpaceDecoding & 0x2, 0x00FF00FF);
-
-    if (pciMemorySpaceDecoding & 0x2) {
-        if (pciMemorySpaceDecoding & 0x4) {
-            cursor_x += 20;
-            // kernel_print(binfo, "Memory Space Decoding Enabled!", 0x00FF00FF);
         }
     }
 }
