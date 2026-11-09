@@ -3,15 +3,6 @@
 
 #include <stdint.h>
 
-typedef struct  
-{
-    uint8_t x;
-    uint8_t y;
-    uint8_t nibble;
-    _Bool active;
-} QueuedSprite;
-
-
 typedef struct {
     uint8_t  memory[4096];  
     uint8_t  V[16];  // Normal Registers (8-bit)

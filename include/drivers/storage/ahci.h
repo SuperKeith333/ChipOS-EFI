@@ -8,7 +8,6 @@
 #include "drivers/storage/block_device.h"
 
 
-extern uint64_t* _virtualIdentityDeviceBuffer;
 extern uint32_t _databaseAddress;
 
 typedef struct {

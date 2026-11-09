@@ -7,7 +7,6 @@
 #include "physical_memory_manager.h"
 #include "drivers/storage/diskio_adapter.h"
 
-uint64_t* _virtualIdentityDeviceBuffer;
 uint32_t _databaseAddress;
 
 _Bool ahci_initialize(pciDeviceInfo* deviceInfo, physicalMemoryManager* memoryManager, BlockDevice* blockDevice) {
@@ -80,7 +79,6 @@ _Bool ahci_initialize(pciDeviceInfo* deviceInfo, physicalMemoryManager* memoryMa
     if (identityDeviceBuffer == 0)
         return 0;
     uint64_t* virtualIdentityDeviceBuffer = (uint64_t*)identityDeviceBuffer;
-    _virtualIdentityDeviceBuffer = virtualIdentityDeviceBuffer;
 
 
     _ahciCommandTable->prdtEntries[0].databaseAddress = (uint32_t)identityDeviceBuffer;

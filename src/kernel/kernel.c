@@ -16,6 +16,7 @@
 #include "error_screen.h"
 #include "chip_screen.h"
 #include "file_screen.h"
+#include "screen.h"
 
 #include <string.h>
 
@@ -77,213 +78,6 @@ void draw(BootInfo* binfo) {
             fileScreen.render(&fileScreen, (void*)&_fileData);
             break;
     }
-    // if (error) {
-    //     kernel_draw_box(binfo, 200, 60, 875, 200, 0x00FFFFFF);
-
-    //     switch (_errorType)
-    //     {
-    //         case BLOCK_DEVICE_ERROR:
-    //             cursor_x = 600; cursor_y = 70;
-    //             kernel_print(binfo, "BLOCK_DEVICE_ERROR", 0x0000FFFF);
-    //             switch (errorCode)
-    //             {
-    //                 case 1:
-    //                     cursor_x = 580; cursor_y = 100;
-    //                     kernel_print(binfo, "BLOCK_DEVICE_DEVICE_ERROR", 0x0000FFFF);
-    //                     break;
-    //                 case 2:
-    //                     cursor_x = 560; cursor_y = 100;
-    //                     kernel_print(binfo, "BLOCK_DEVICE_DEVICE_NOT_READY", 0x0000FFFF);
-    //                     break;
-    //                 case 3:
-    //                     cursor_x = 580; cursor_y = 100;
-    //                     kernel_print(binfo, "BLOCK_DEVICE_INVALID_LBA", 0x0000FFFF);
-    //                     break;
-    //                 case 4:
-    //                     cursor_x = 560; cursor_y = 100;
-    //                     kernel_print(binfo, "BLOCK_DEVICE_INVALID_ARGUMENT", 0x0000FFFF);
-    //                     break;
-    //                 case 5:
-    //                     cursor_x = 595; cursor_y = 100;
-    //                     kernel_print(binfo, "BLOCK_DEVICE_TIMEOUT", 0x0000FFFF);
-    //                     break;
-    //                 case 6:
-    //                     cursor_x = 590; cursor_y = 100;
-    //                     kernel_print(binfo, "BLOCK_DEVICE_IO_ERROR", 0x0000FFFF);
-    //                     break;
-                    
-    //                 default:
-    //                     break;
-    //             }
-    //             break;
-    //         case SDHCI_ERROR:
-    //             cursor_x = 620; cursor_y = 70;
-    //             kernel_print(binfo, "SDHCI_ERROR", 0x0000FFFF);
-    //             switch (errorCode)
-    //             {
-    //                 case 1:
-    //                     cursor_x = 560; cursor_y = 100;
-    //                     kernel_print(binfo, "SDHCI_SOFTWARE_RESET_TIMEOUT", 0x0000FFFF);
-    //                     break;
-    //                 case 2:
-    //                     cursor_x = 520; cursor_y = 100;
-    //                     kernel_print(binfo, "SDHCI_INTERNAL_CLOCK_STABILITY_TIMEOUT", 0x0000FFFF);
-    //                     break;
-    //                 case 3:
-    //                     cursor_x = 520; cursor_y = 100;
-    //                     kernel_print(binfo, "SDHCI_FAILED_TO_ALLOCATE_HEAP_MEMORY", 0x0000FFFF);
-    //                     break;
-    //                 case 4:
-    //                     cursor_x = 580; cursor_y = 100;
-    //                     kernel_print(binfo, "SDHCI_GENERIC_TIMEOUT", 0x0000FFFF);
-    //                     break;
-                    
-    //                 default:
-    //                     break;
-    //             }
-    //             break;
-    //         default:
-    //             break;
-    //     }
-    // } else {
-    //     if (runningChip8) {
-    //         // Game Monitor Panel
-    //         cursor_x = 450; cursor_y = 35;
-    //         kernel_print(binfo, "VIRTUAL GAME MONITOR\n", 0x0000FFFF);
-    //         kernel_draw_box(binfo, 200, 60, 642, 322, 0x00FFFFFF);
-    //         kernel_draw_chip8_screen(binfo, c8.gfx, 201, 61, 10, 0x0000FF00, 0x00080812);
-
-    //         uint16_t current_opcode = (c8.memory[c8.pc] << 8) | c8.memory[c8.pc + 1];
-
-    //         // Hardware Core CPU Debugger Panel
-    //         cursor_x = panel_x; cursor_y = 35;
-    //         kernel_print(binfo, "CPU CORE REGISTERS & ARCHITECTURE STATUS\n", 0x00FF00FF);
-    //         kernel_draw_box(binfo, panel_x, 60, 310, 480, 0x00505070);
-
-    //         cursor_x = panel_x + 15; cursor_y = 80;
-    //         kernel_print(binfo, "PC STATUS : ", 0x00A0A0A0);
-    //         kernel_print_hex16(binfo, c8.pc, 0x00FFFF00);
-
-    //         cursor_x = panel_x + 15; cursor_y = 100;
-    //         kernel_print(binfo, "OPCODE    : ", 0x00A0A0A0);
-    //         kernel_print_hex16(binfo, current_opcode, 0x0000FFFF); 
-
-    //         cursor_x = panel_x + 15; cursor_y = 120;
-    //         kernel_print(binfo, "INDEX (I) : ", 0x00A0A0A0);
-    //         kernel_print_hex16(binfo, c8.I, 0x00FFFF00);
-
-    //         cursor_x = panel_x + 15; cursor_y = 140;
-    //         kernel_print(binfo, "TIMERS    : DT:", 0x00A0A0A0);
-    //         kernel_print_hex8(binfo, c8.delay_timer, 0x0000FF00);
-    //         kernel_print(binfo, " ST:", 0x00A0A0A0);
-    //         kernel_print_hex8(binfo, c8.sound_timer, 0x00FF3333);
-
-    //         cursor_x = panel_x + 15; cursor_y = 160;
-    //         kernel_print(binfo, "STACK PTR : SP:", 0x00A0A0A0);
-    //         kernel_print_int(binfo, c8.sp, 0x0000FFFF);
-    //         kernel_print(binfo, " TOP:", 0x00A0A0A0);
-    //         kernel_print_hex16(binfo, c8.stack[c8.sp > 0 ? c8.sp - 1 : 0], 0x0000FFFF);
-
-    //         cursor_x = panel_x + 15; cursor_y = 195;
-    //         kernel_print(binfo, "--- REGISTER DATA MATRIX ---\n", 0x0050FF50);
-
-    //         for (int i = 0; i < 16; i++) {
-    //             if (i < 8) {
-    //                 cursor_x = panel_x + 15;
-    //                 cursor_y = 220 + (i * 20);
-    //             } else {
-    //                 cursor_x = panel_x + 165;
-    //                 cursor_y = 220 + ((i - 8) * 20);
-    //             }
-
-    //             uint8_t reg_label[] = "V_ : ";
-    //             reg_label[1] = (i < 10) ? (i + '0') : (i - 10 + 'A');
-                    
-    //             kernel_print(binfo, reg_label, 0x00FFFFFF);
-    //             kernel_print_hex8(binfo, c8.V[i], 0x00FFFF80);
-    //         }
-    //     } else {
-    //         // Draw Window Outline
-    //         kernel_draw_box(binfo, 60, 60, 1150, 640, 0x0050FF50);
-    //         cursor_x = 550; cursor_y = 45;
-    //         kernel_print(binfo, "--- CHOOSE A ROM TO RUN ---\n", 0x00FF00FF);
-
-    //         uint32_t bar5 = pci_read_config(deviceInfo.bus, deviceInfo.device, deviceInfo.function, 0x24);
-    //         uint32_t mmioBaseAddress = bar5 & ~0xF;
-    //         // uint32_t pml4Index = (mmioBaseAddress >> 39) & 0x1FF;
-    //         // uint32_t pdptIndex = (mmioBaseAddress >> 30) & 0x1FF;
-    //         // uint32_t pageDirectoryIndex = (mmioBaseAddress >> 21) & 0x1FF;
-    //         // uint32_t pageTableIndex = (mmioBaseAddress >> 12) & 0x1FF;
-    //         // uint64_t pmlBaseAddress = readCr3();
-
-    //         volatile hbaMem* _hbaMem = (hbaMem*)mmioBaseAddress;
-
-    //         uint32_t _cap = _hbaMem->cap;
-    //         uint32_t _pi = _hbaMem->pi;
-
-    //         uint32_t bar0 = pci_read_config(deviceInfo.bus, deviceInfo.device, deviceInfo.function, 0x10);
-    //         volatile uint32_t* presentStateRegAddr = (uint32_t*)(bar0 + 0x24);
-    //         volatile uint32_t* capabilitiesRegAddr = (uint32_t*)(bar0 + 0x40);
-    //         volatile uint32_t* controlClockRegAddr = (uint32_t*)(bar0 + 0x2C);
-    //         volatile uint32_t* powerControllRegAddr = (uint32_t*)(bar0 + 0x29);
-    //         volatile uint32_t* response0RegAddr = (uint32_t*)(bar0 + 0x10);
-    //         volatile uint32_t* response1RegAddr = (uint32_t*)(bar0 + 0x14);
-    //         volatile uint32_t* response2RegAddr = (uint32_t*)(bar0 + 0x18);
-    //         volatile uint32_t* response3RegAddr = (uint32_t*)(bar0 + 0x1C);
-    //         volatile uint16_t* normalInterruptStatusEnableRegAddr = (uint16_t*)(bar0 + 0x34);
-    //         volatile uint16_t* commandRegAddr = (uint16_t*)(bar0 + 0x0E);
-    //         volatile uint16_t* errorInteruptStatusRegAddr = (uint16_t*)(bar0 + 0x32);
-    //         volatile uint8_t* hostControllRegAddr = (uint8_t*)(bar0 + 0x28);
-    //         volatile uint8_t* timeoutControllRegAddr = (uint8_t*)(bar0 + 0x2E);
-    //         volatile uint8_t* softwareResetRegAddr = (uint8_t*)(bar0 + 0x2F);
-    //         volatile uint32_t* commandArgument1Addr = (uint32_t*)(bar0 + 0x08);
-    //         volatile uint16_t* NormalInterruptStatusRegAddr = (uint16_t*)(bar0 + 0x30);
-    //         volatile uint32_t* bufferDataPort = (uint32_t*)(bar0 + 0x20);
-    //         volatile uint16_t* transferModeReg = (uint16_t*)(bar0 + 0x0C);
-
-    //         cursor_x = 550; cursor_y = 90;
-    //         kernel_print_int(binfo, fileCount, 0x00FF00FF);
-    //         sdhciContext* context = (sdhciContext*)blockDevice.context;
-    //         uint8_t* sectorData8 = (uint8_t*)context->sectorData;
-    //         uint32_t* data = (uint32_t*)context->sectorData;
-    //         uint8_t readBlLen = (context->csd2 >> 8) & 0xF;
-    //         uint32_t cSize = ((context->csd2 & 0x3) << 10) | ((context->csd1 >> 22) & 0x3FF);
-    //         uint8_t cSizeMult = (context->csd1 >> 7) & 0x7;
-
-    //         uint64_t capacityBytes =
-    //             (uint64_t)(cSize + 1) *
-    //             (1ULL << (cSizeMult + 2)) *
-    //             (1ULL << readBlLen);
-
-    //         uint64_t sectorCount = capacityBytes / 512;
-
-    //         f_readdir(&rootDir, &fileInfo);
-    //         while (fileInfo.fname[0] != '\0') {
-    //             cursor_x = 650; cursor_y += 20;
-    //             kernel_print(binfo, fileInfo.fname, 0x00FF00FF);
-    //             f_readdir(&rootDir, &fileInfo);
-    //         }
-    //         f_rewinddir(&rootDir);
-
-    //         // for (uint8_t i = 0; i < fileCount - 1; i++) {
-    //         //     cursor_x = 650; cursor_y += 20;
-    //         //     kernel_print(binfo, (char*)fileNames[i], 0x00FF00FF);
-    //         // }
-    //         // cursor_x = 550; cursor_y = 130;
-    //         // kernel_print_hex(binfo, *bufferDataPort, 0x00FF00FF);
-    //         // cursor_x = 550; cursor_y = 150;
-    //         // kernel_print_hex(binfo, *response2RegAddr, 0x00FF00FF);
-    //         // cursor_x = 550; cursor_y = 170;
-    //         // kernel_print_hex(binfo, *response3RegAddr, 0x00FF00FF);
-
-    //         // for (uint8_t i = 0; i < 16; i++) {
-    //         //     cursor_x = 550; cursor_y += 20;
-    //         //     kernel_print_int(binfo, ((uint16_t*)565248)[i], 0x00FF00FF);
-    //         // }
-    //         // cursor_x = 600; cursor_y = 130;
-    //         // kernel_print_int(binfo, _databaseAddress, 0x00FF00FF);
-    //     }
-    // }
 }
 
 void tick() {
@@ -298,28 +92,6 @@ void tick() {
             fileScreen.tick(&fileScreen, &_fileData);
             break;
     }
-    // if (error)
-    //     return;
-
-    // if (!runningChip8)
-    //     return;
-    
-    // chip8_update_timers(&c8);
-
-    // for (uint16_t i = 0; i < OPCODES_PER_FRAME; i++) {
-    //     if (!c8.drewSprite)
-    //         chip8_cycle(&c8);
-    // }
-
-    // if (c8.sound_timer > 0) {
-    //     kernel_play_sound(440);
-    // } else {
-    //     kernel_stop_sound();
-    // }
-
-    // c8.drewSprite = 0;
-
-    // framesPassed++;
 }
 
 void input() {
@@ -335,66 +107,13 @@ void input() {
             break;
     }
 
-    // if (error)
-    //     return;
-
-    // uint8_t live_scancode = kernel_get_scancode();
-    // if (runningChip8) {
-    //     switch (live_scancode) {
-    //         // Row 1: 1, 2, 3, 4  ->  1, 2, 3, C
-    //         case 0x02: c8.key[0x1] = 1; break; // '1' pressed
-    //         case 0x82: c8.key[0x1] = 0; break; // '1' released
-    //         case 0x03: c8.key[0x2] = 1; break; // '2' pressed
-    //         case 0x83: c8.key[0x2] = 0; break; // '2' released
-    //         case 0x04: c8.key[0x3] = 1; break; // '3' pressed
-    //         case 0x84: c8.key[0x3] = 0; break; // '3' released
-    //         case 0x05: c8.key[0xC] = 1; break; // '4' pressed
-    //         case 0x85: c8.key[0xC] = 0; break; // '4' released
-
-    //         // Row 2: Q, W, E, R  ->  4, 5, 6, D
-    //         case 0x10: c8.key[0x4] = 1; break; // 'Q' pressed
-    //         case 0x90: c8.key[0x4] = 0; break; // 'Q' released
-    //         case 0x11: c8.key[0x5] = 1; break; // 'W' pressed
-    //         case 0x91: c8.key[0x5] = 0; break; // 'W' released
-    //         case 0x12: c8.key[0x6] = 1; break; // 'E' pressed
-    //         case 0x92: c8.key[0x6] = 0; break; // 'E' released
-    //         case 0x13: c8.key[0xD] = 1; break; // 'R' pressed
-    //         case 0x93: c8.key[0xD] = 0; break; // 'R' released
-
-    //         // Row 3: A, S, D, F  ->  7, 8, 9, E
-    //         case 0x1E: c8.key[0x7] = 1; break; // 'A' pressed
-    //         case 0x9E: c8.key[0x7] = 0; break; // 'A' released
-    //         case 0x1F: c8.key[0x8] = 1; break; // 'S' pressed
-    //         case 0x9F: c8.key[0x8] = 0; break; // 'S' released
-    //         case 0x20: c8.key[0x9] = 1; break; // 'D' pressed
-    //         case 0xA0: c8.key[0x9] = 0; break; // 'D' released
-    //         case 0x21: c8.key[0xE] = 1; break; // 'F' pressed
-    //         case 0xA1: c8.key[0xE] = 0; break; // 'F' released
-
-    //         // Row 4: Z, X, C, V  ->  A, 0, B, F
-    //         case 0x2C: c8.key[0xA] = 1; break; // 'Z' pressed
-    //         case 0xAC: c8.key[0xA] = 0; break; // 'Z' released
-    //         case 0x2D: c8.key[0x0] = 1; break; // 'X' pressed
-    //         case 0xAD: c8.key[0x0] = 0; break; // 'X' released
-    //         case 0x2E: c8.key[0xB] = 1; break; // 'C' pressed
-    //         case 0xAE: c8.key[0xB] = 0; break; // 'C' released
-    //         case 0x2F: c8.key[0xF] = 1; break; // 'V' pressed
-    //         case 0xAF: c8.key[0xF] = 0; break; // 'V' released
-
-    //         default: break;
-    //     }
-    // } else {
-    //     if (live_scancode == 0x1C) {
-    //         runningChip8 = 1;
-    //     }
-    // }
 }
 
 void kernel_main(BootInfo* binfo) {
     uint64_t total_pixels = binfo->Height * binfo->PixelsPerScanLine;
 
     initialize_physical_memory_manager(binfo, &memoryManager);
-    initialize_heap(&_heap, &memoryManager, 4096);
+    _Bool res = initialize_heap(&_heap, &memoryManager, 65536);
 
     readFileAddr = allocate_physical_page(&memoryManager);
 
@@ -405,19 +124,6 @@ void kernel_main(BootInfo* binfo) {
     initialize_screen(&fileScreen, binfo, 0, fileScreen_start, fileScreen_tick, fileScreen_input, fileScreen_render, set_screen);
     _activeScreen = FILE_SCREEN;
     lastActiveScreen = FILE_SCREEN;
-
-    // _16BitAddress = (uint32_t*)heap_allocate(&_heap, 16);
-    // _32BitAddress = (uint32_t*)heap_allocate(&_heap, 32);
-    // _64BitAddress = (uint32_t*)heap_allocate(&_heap, 64);
-    // _128BitAddress = (uint32_t*)heap_allocate(&_heap, 128);
-    // _256BitAddress = (uint32_t*)heap_allocate(&_heap, 256);
-    // _512BitAddress = (uint32_t*)heap_allocate(&_heap, 512);
-
-    // heap_free(&_heap, _16BitAddress);
-    // heap_free(&_heap, _64BitAddress);
-    // heap_free(&_heap, _256BitAddress);
-
-    // _16BitAddress = (uint32_t*)heap_allocate(&_heap, 513);
 
     pci_enumerate_all(&deviceInfo);
 
@@ -438,11 +144,66 @@ void kernel_main(BootInfo* binfo) {
     result = f_mount(&fatFs, "0:", 1);
     result = f_opendir(&rootDir, "0:/");
 
-    // ahciInitialized = ahci_initialize(&deviceInfo, &memoryManager, &blockDevice);
+    _fileData.rootFolder.name[0] = '0';
+    _fileData.rootFolder.name[1] = ':';
+    _fileData.rootFolder.name[2] = '\0';
 
-    // if (ahci_initialize) {
-    //     diskio_set_device(&blockDevice);
-    // }
+    _fileData.rootFolder.path[0] = '0';
+    _fileData.rootFolder.path[1] = ':';
+    _fileData.rootFolder.path[2] = '/';
+    _fileData.rootFolder.path[3] = '\0';
+    _fileData.rootFolder.dir = &rootDir;
+    _fileData.currentFolder = &_fileData.rootFolder;
+    _fileData.rootFolder.generated = 1;
+    
+    f_readdir(_fileData.rootDir, _fileData.fileInfo);
+    while (_fileData.fileInfo->fname[0] != '\0') {
+        if ((_fileData.fileInfo->fattrib & AM_DIR) == 0) {
+            _fileData.rootFolder.fileCount++;
+        } else {
+            _fileData.rootFolder.folderCount++;
+        }
+        f_readdir(_fileData.rootDir, _fileData.fileInfo);
+    }
+
+    file files[_fileData.rootFolder.fileCount];
+    folder folders[_fileData.rootFolder.folderCount];
+
+    f_rewinddir(_fileData.rootDir); 
+    uint8_t fileI = 0;
+    uint8_t folderI = 0;
+    uint8_t iterator = 0;
+    f_readdir(_fileData.rootDir, _fileData.fileInfo);
+    while (_fileData.fileInfo->fname[0] != '\0') {
+        if ((_fileData.fileInfo->fattrib & AM_DIR) == 0) {
+            FILINFO* fileInfoPointer = heap_allocate(&_heap, sizeof(FILINFO));
+            memcpy(fileInfoPointer, _fileData.fileInfo, sizeof(FILINFO));
+            files[fileI].fileInfo = fileInfoPointer;
+            for (uint16_t i = 0; i < 256; i++) {
+                files[fileI].name[i] = _fileData.fileInfo->fname[i];
+            }
+            files[fileI].index = iterator;
+            fileI++;
+        } else {
+            for (uint16_t i = 0; i < 256; i++) {
+                folders[folderI].name[i] = _fileData.fileInfo->fname[i];
+            }
+            folders[folderI].parentFolder = &_fileData.rootFolder;
+            folders[folderI].generated = 0;
+            folders[folderI].index = iterator;
+            folderI++;
+        }
+        f_readdir(_fileData.rootDir, _fileData.fileInfo);
+        iterator++;
+    }
+
+    folder* folderPtr = heap_allocate(&_heap, sizeof(folder) * (_fileData.rootFolder.folderCount));
+    memcpy(folderPtr, folders, sizeof(folder) * _fileData.rootFolder.folderCount);
+    _fileData.rootFolder.folders = folderPtr; 
+
+    file* filesPtr = heap_allocate(&_heap, sizeof(file) * _fileData.rootFolder.fileCount);
+    memcpy(filesPtr, files, sizeof(file) * _fileData.rootFolder.fileCount);
+    _fileData.rootFolder.files = filesPtr; 
 
     uint64_t cycles_per_screen_frame = 16666 * binfo->CpuMhz; // 60 FPS Frame
     uint64_t cycles_per_second = 1000000 * binfo->CpuMhz;
@@ -473,81 +234,110 @@ void kernel_main(BootInfo* binfo) {
                     errorScreen.start(&errorScreen, 0);
                     break;
                 case CHIP_SCREEN:
-                    // _activeScreen = ERROR_SCREEN;
-                    f_rewinddir(&rootDir);
-                    f_readdir(_fileData.rootDir, _fileData.fileInfo);
-                    for (uint8_t i = 0; i < _fileData.selectedFile; i++) {
-                        f_readdir(_fileData.rootDir, _fileData.fileInfo);
+                    if (_fileData.selectedFile <= _fileData.currentFolder->fileCount - 1) {
+                        FIL file;
+
+                        char path[256];
+                        memcpy(path, _fileData.currentFolder->path, sizeof(_fileData.currentFolder->path) + 1);
+
+                        FRESULT res = f_open(&file, strcat(path, _fileData.currentFolder->files[_fileData.selectedFile].name), FA_READ);
+
+                        UINT bytesRead = 0;
+
+                        res = f_read(&file, (uint8_t*)(readFileAddr), f_size(&file), &bytesRead);
+
+                        for (uint16_t i = 0; i < bytesRead; i++) {
+                            _c8_start.rom[i] = ((uint8_t*)readFileAddr)[i];
+                        }
+                        _c8_start.romSize = (uint16_t)bytesRead;
+
+                        chipScreen.start(&chipScreen, (void*)&_c8_start);
+                    } else {
+                        _Bool generated = 0;
+                        for (uint8_t i = 0; i < _fileData.currentFolder->folderCount; i++) {
+                            if (strcmp(_fileData.currentFolder->folders[i].name, _fileData.currentFolder->folders[_fileData.selectedFile - _fileData.currentFolder->fileCount].name) == 0) {
+                                if (_fileData.currentFolder->folders[i].generated) {
+                                    _activeScreen = FILE_SCREEN;
+                                    generated = 1;
+                                    _fileData.currentFolder = &_fileData.currentFolder->folders[i];
+                                    _fileData.selectedFile = 0;
+                                    break;
+                                }
+                                DIR dir;
+                                char dirName[256];
+                                memcpy(dirName, _fileData.currentFolder->name, strlen(_fileData.currentFolder->name) + 1);
+                                strcat(dirName, "/");
+                                strcat(dirName, _fileData.currentFolder->folders[_fileData.selectedFile - _fileData.currentFolder->fileCount].name);
+                                strcat(dirName, "/");
+
+                                FRESULT res = f_opendir(&dir, dirName);
+                                DIR* dirPtr = heap_allocate(&_heap, sizeof(DIR));
+                                memcpy(dirPtr, &dir, sizeof(DIR));
+
+                                _fileData.currentFolder->folders[i].dir = dirPtr;
+                                memcpy(_fileData.currentFolder->folders[i].path, dirName, strlen(dirName) + 1);
+                                _fileData.currentFolder = &_fileData.currentFolder->folders[i];
+                            }
+                        }
+
+                        if (generated)
+                            break;
+
+                        f_rewinddir(_fileData.currentFolder->dir);
+                        _fileData.currentFolder->fileCount = 0;
+                        _fileData.currentFolder->folderCount = 0;
+                        f_readdir(_fileData.currentFolder->dir, _fileData.fileInfo);
+                        while (_fileData.fileInfo->fname[0] != '\0') {
+                            if ((_fileData.fileInfo->fattrib & AM_DIR) == 0) {
+                                _fileData.currentFolder->fileCount++;
+                            } else {
+                                _fileData.currentFolder->folderCount++;
+                            }
+                            f_readdir(_fileData.currentFolder->dir, _fileData.fileInfo);
+                        }
+
+
+                        file newFiles[_fileData.currentFolder->fileCount];
+                        folder newFolders[_fileData.currentFolder->folderCount];
+
+
+
+                        f_rewinddir(_fileData.currentFolder->dir); 
+                        fileI = 0;
+                        folderI = 0;
+                        f_readdir(_fileData.currentFolder->dir, _fileData.fileInfo);
+                        while (_fileData.fileInfo->fname[0] != '\0') {
+                            if ((_fileData.fileInfo->fattrib & AM_DIR) == 0) {
+                                FILINFO* fileInfoPointer = heap_allocate(&_heap, sizeof(FILINFO));
+                                memcpy(fileInfoPointer, _fileData.fileInfo, sizeof(FILINFO));
+                                newFiles[fileI].fileInfo = fileInfoPointer;
+                                for (uint16_t i = 0; i < 256; i++) {
+                                    newFiles[fileI].name[i] = _fileData.fileInfo->fname[i];
+                                }
+                                fileI++;
+                            } else {
+                                for (uint16_t i = 0; i < 256; i++) {
+                                    newFolders[folderI].name[i] = _fileData.fileInfo->fname[i];
+                                }
+                                newFolders[folderI].parentFolder = _fileData.currentFolder;
+                                folderI++;
+                            }
+                            f_readdir(_fileData.currentFolder->dir, _fileData.fileInfo);
+                        }
+
+                        folder* folderPtr = heap_allocate(&_heap, sizeof(folder) * (_fileData.currentFolder->folderCount));
+                        memcpy(folderPtr, newFolders, sizeof(folder) * _fileData.currentFolder->folderCount);
+                        _fileData.currentFolder->folders = folderPtr; 
+
+                        file* filesPtr = heap_allocate(&_heap, sizeof(file) * _fileData.currentFolder->fileCount);
+                        memcpy(filesPtr, newFiles, sizeof(file) *_fileData.currentFolder->fileCount);
+                        _fileData.currentFolder->files = filesPtr; 
+
+                        _fileData.selectedFile = 0;
+                        _fileData.currentFolder->generated = 1;
+
+                        _activeScreen = FILE_SCREEN;
                     }
-
-                    FIL file;
-
-                    char path[128] = "0:/";
-
-                    FRESULT res = f_open(&file, strcat(path, _fileData.fileInfo->fname), FA_READ);
-                        
-                    if (res != FR_OK) {
-                        _activeScreen = ERROR_SCREEN;
-                        errorScreen.start(&errorScreen, 0);
-
-                        kernel_clear_screen(binfo, 0x0012121F);
-
-                        kernel_print(binfo, _fileData.fileInfo->fname, 0x0000FFFF);
-
-                        kernel_blit(binfo->Framebuffer, binfo->BackBuffer, total_pixels);
-
-                        while (1) {}
-                        break;
-                    }
-
-                    UINT bytesRead = 0;
-
-                    res = f_read(&file, (uint8_t*)(readFileAddr), f_size(&file), &bytesRead);
-                    // if (res == FR_OK) {
-                    //     _activeScreen = ERROR_SCREEN;
-                    //     errorScreen.start(&errorScreen, 0);
-                    //     kernel_clear_screen(binfo, 0x0012121F);
-
-                    //     cursor_x = 100; cursor_y = 100;
-                    //     kernel_print_int(binfo, bytesRead, 0x0000FFFF);
-
-                    //     cursor_x = 100; cursor_y = 120;
-                    //     kernel_print_int(binfo, f_size(&file), 0x0000FFFF);
-
-                    //     cursor_x = 100; cursor_y = 140;
-                    //     kernel_print_int(binfo, ((uint8_t*)readFileAddr)[1], 0x0000FFFF);
-
-                    //     kernel_blit(binfo->Framebuffer, binfo->BackBuffer, total_pixels);
-                    //     while (1) {}
-                    //     break;
-                    // }
-
-                    // errorScreen.start(&errorScreen, 0);
-                    // break;
-
-                    for (uint16_t i = 0; i < bytesRead; i++) {
-                        _c8_start.rom[i] = ((uint8_t*)readFileAddr)[i];
-                    }
-                    _c8_start.romSize = (uint16_t)bytesRead;
-
-                        // _activeScreen = ERROR_SCREEN;
-                        // errorScreen.start(&errorScreen, 0);
-                        // kernel_clear_screen(binfo, 0x0012121F);
-
-                        // cursor_x = 100; cursor_y = 100;
-                        // kernel_print_hex8(binfo, _c8_start.rom[131], 0x0000FFFF);
-
-                        // cursor_x = 100; cursor_y = 120;
-                        // kernel_print_int(binfo, f_size(&file), 0x0000FFFF);
-
-                        // cursor_x = 100; cursor_y = 140;
-                        // kernel_print_hex8(binfo, ((uint8_t*)readFileAddr)[131], 0x0000FFFF);
-
-                        // kernel_blit(binfo->Framebuffer, binfo->BackBuffer, total_pixels);
-                        // while (1) {}
-
-
-                    chipScreen.start(&chipScreen, (void*)&_c8_start);
                     break;
                 case FILE_SCREEN:
                     fileScreen.start(&fileScreen, 0);

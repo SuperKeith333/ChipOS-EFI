@@ -231,7 +231,7 @@ void chip8_cycle(Chip8* c8) {
             break;
         }
         case 0xB000: {
-            c8->pc = (instruction & 0x0FFF) + c8->V[0];
+            c8->pc = (instruction & 0x0FFF) + c8->V[((instruction >> 2) & 0x1)];
         }
         case 0xC000: {
             uint8_t x = (instruction & 0x0F00) >> 8;

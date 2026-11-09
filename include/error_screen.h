@@ -1,6 +1,7 @@
 #ifndef ERROR_SCREEN_H
 #define ERROR_SCREEN_H
 
+#include "renderer.h"
 #include "screen.h"
 
 typedef enum {

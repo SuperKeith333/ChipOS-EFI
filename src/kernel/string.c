@@ -50,3 +50,26 @@ char* strcpy(char* dst, const char* src) {
     while ((*d++ = *src++));
     return dst;
 }
+
+uint64_t strlen(const char* str) {
+	uint64_t length = 0;
+
+	while (str[length] != '\0') {
+		length++;
+	}
+
+	return length;
+}
+
+int strcmp(const char* str1, const char* str2) {
+	uint64_t i = 0;
+
+	while (str1[i] != '\0' && str2[i] != '\0') {
+		if (str1[i] != str2[i])
+			return str1[i] - str2[i];
+
+		i++;
+	}
+
+	return str1[i] - str2[i];
+}
