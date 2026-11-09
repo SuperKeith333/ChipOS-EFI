@@ -3,6 +3,7 @@
 #include "ff.h"
 #include "diskio.h"
 #include "drivers/storage/block_device.h"
+#include "io.h"
 
 static BlockDevice* _blockDevice = NULL;
 

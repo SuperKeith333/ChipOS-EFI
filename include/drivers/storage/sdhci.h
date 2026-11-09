@@ -52,6 +52,6 @@ typedef enum {
 extern sdhciAddresses _sdhciAddresses;
 
 sdhciStatus sdhci_initialize(pciDeviceInfo* deviceInfo, BlockDevice* _blockDevice, physicalMemoryManager* memoryManager, heap* _heap);
-BlockDeviceStatus sdhci_read_sectors(void* context, uint32_t lba, uint32_t count, void* buffer);
+BlockDeviceStatus sdhci_read_sectors(void* context, uint64_t lba, uint32_t count, void* buffer);
 
 #endif

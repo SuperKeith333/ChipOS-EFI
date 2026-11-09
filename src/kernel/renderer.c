@@ -87,6 +87,15 @@ void kernel_draw_box(BootInfo* binfo, unsigned int x, unsigned int y, unsigned i
     }
 }
 
+void renderer_draw_line(BootInfo* binfo, unsigned int x, unsigned int y, unsigned int width, unsigned int color) {
+    for (unsigned int i = 0; i < width; i++) {
+        if ((x + i) < binfo->Width) {
+            if (y < binfo->Height) 
+                binfo->BackBuffer[(x + i) + (y * binfo->PixelsPerScanLine)] = color;
+        }
+    }
+}
+
 // Prints an unsigned integer as a hexadecimal string (up to 64-bit values)
 void kernel_print_hex(BootInfo* binfo, unsigned long long value, unsigned int color) {
     char hex_digits[] = "0123456789ABCDEF";

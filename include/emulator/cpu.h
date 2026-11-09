@@ -27,7 +27,7 @@ typedef struct {
     _Bool drewSprite;
 } Chip8;
 
-void chip8_init(Chip8* c8);
+void chip8_init(Chip8* c8, uint8_t rom[], uint16_t romSize);
 void chip8_cycle(Chip8* c8);
 void chip8_update_timers(Chip8* c8);
 

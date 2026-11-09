@@ -151,46 +151,50 @@ sdhciStatus sdhci_initialize(pciDeviceInfo* deviceInfo, BlockDevice* _blockDevic
     context->sectorData = sectorData;
     context->bar0 = bar0;
 
-    sdhci_read_sectors(context, 0, 1, (void*)sectorData);
+    sdhci_read_sectors(context, 0, 2, (void*)sectorData);
 
     _blockDevice->context = context;
+    _blockDevice->sector_size = 512;
+    _blockDevice->sector_count = sectorCount;
+    _blockDevice->read_sectors = sdhci_read_sectors;
     return SDHCI_SUCCESS;
 }
 
-BlockDeviceStatus sdhci_read_sectors(void* context, uint32_t lba, uint32_t count, void* buffer) {
+BlockDeviceStatus sdhci_read_sectors(void* context, uint64_t lba, uint32_t count, void* buffer) {
     sdhciContext* _sdhciContext = (sdhciContext*)context;
 
-    if (count != 1)
-        return BLOCK_DEVICE_INVALID_ARGUMENT;
     if (lba >= _sdhciContext->sectorCount)
         return BLOCK_DEVICE_INVALID_ARGUMENT;
-    if (count > _sdhciContext->sectorCount)
+    if (count > _sdhciContext->sectorCount - lba)
         return BLOCK_DEVICE_INVALID_ARGUMENT;
     
-    *_sdhciAddresses.NormalInterruptStatusRegAddr = 0x0001;
-    
-    *_sdhciAddresses.commandArgument1Addr = lba * 512;
-    *_sdhciAddresses.blockSizeRegAddr = 512;
-    *_sdhciAddresses.blockCountRegAddr = 1;
-    *_sdhciAddresses.transferModeReg = 0x0012;
+    for (uint64_t i = 0; i < count; i++) {
+        *_sdhciAddresses.NormalInterruptStatusRegAddr = 0x0001;
+        
+        *_sdhciAddresses.commandArgument1Addr = ((uint32_t)lba + i) * 512;
+        *_sdhciAddresses.blockSizeRegAddr = 512;
+        *_sdhciAddresses.blockCountRegAddr = 1;
+        *_sdhciAddresses.transferModeReg = 0x0012;
 
-    setBitAtOffset_uint16(_sdhciAddresses.normalInterruptStatusEnableRegAddr, 5, 1); // allows the control to report to buffer ready ready bit
-    setBitAtOffset_uint16(_sdhciAddresses.normalInterruptSignalEnableRegAddr, 5, 1); // allows cpu interrupt
+        setBitAtOffset_uint16(_sdhciAddresses.normalInterruptStatusEnableRegAddr, 5, 1); // allows the control to report to buffer ready ready bit
+        setBitAtOffset_uint16(_sdhciAddresses.normalInterruptSignalEnableRegAddr, 5, 1); // allows cpu interrupt
 
-    if (!checkForTimeout_uint32(_sdhciAddresses.presentStateRegAddr, 0, 0, 1, 0)) // wait for the controller to finish operations
-        return BLOCK_DEVICE_TIMEOUT;
+        if (!checkForTimeout_uint32(_sdhciAddresses.presentStateRegAddr, 0, 0, 1, 0)) // wait for the controller to finish operations
+            return BLOCK_DEVICE_TIMEOUT;
 
-    *_sdhciAddresses.commandRegAddr = 0x113A; // read a 512 byte block from lba
+        *_sdhciAddresses.commandRegAddr = 0x113A; // read a 512 byte block from lba
 
-    if (!checkForTimeout_uint16(_sdhciAddresses.NormalInterruptStatusRegAddr, 0, 0, 1, 1)) // wait for the controller to complete the command
-        return BLOCK_DEVICE_TIMEOUT;
+        if (!checkForTimeout_uint16(_sdhciAddresses.NormalInterruptStatusRegAddr, 0, 0, 1, 1)) // wait for the controller to complete the command
+            return BLOCK_DEVICE_TIMEOUT;
 
-    for (uint8_t i = 0; i < 128; i++) {
-        ((uint32_t*)buffer)[i] = *_sdhciAddresses.bufferDataPort;
+        for (uint8_t j = 0; j < 128; j++) {
+            ((uint32_t*)buffer)[(i * 128) + j] = *_sdhciAddresses.bufferDataPort;
+        }
+
+        if (!checkForTimeout_uint16(_sdhciAddresses.NormalInterruptStatusRegAddr, 0, 0, 1, 1)) // wait for the controller to complete the command
+            return BLOCK_DEVICE_TIMEOUT;
     }
 
-    if (!checkForTimeout_uint16(_sdhciAddresses.NormalInterruptStatusRegAddr, 0, 0, 1, 1)) // wait for the controller to complete the command
-        return BLOCK_DEVICE_TIMEOUT;
 
     return BLOCK_DEVICE_SUCCESS;
 }

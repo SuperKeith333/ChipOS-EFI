@@ -3,12 +3,6 @@
 
 #include <stdint.h>
 
-typedef enum {
-    NONE,
-    BLOCK_DEVICE_ERROR,
-    SDHCI_ERROR
-} errorType;
-
 static inline void setByteAtIndex_uint8(volatile uint8_t* address, uint8_t index, uint8_t value) {
     address[index] = value;
 }

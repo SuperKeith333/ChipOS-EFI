@@ -19,7 +19,9 @@ CFLAGS  = -I/usr/include/efi \
 		  -MP \
           -mno-red-zone \
           -maccumulate-outgoing-args \
-          -O2
+          -O2 \
+		  -fno-builtin \
+		  -fno-tree-loop-distribute-patterns
 
 LDFLAGS = -nostdlib \
           -znocombreloc \
@@ -33,6 +35,7 @@ TARGET = BOOTX64.EFI
 
 OBJECTS = $(BUILD_DIR)/boot/bootloader.o \
           $(BUILD_DIR)/kernel/kernel.o \
+          $(BUILD_DIR)/kernel/screen.o \
           $(BUILD_DIR)/kernel/renderer.o \
           $(BUILD_DIR)/emulator/cpu.o \
           $(BUILD_DIR)/kernel/physical_memory_manager.o \
@@ -42,6 +45,7 @@ OBJECTS = $(BUILD_DIR)/boot/bootloader.o \
           $(BUILD_DIR)/drivers/storage/sdhci.o \
           $(BUILD_DIR)/third_party/fatfs/ff.o \
           $(BUILD_DIR)/third_party/fatfs/ffunicode.o \
+		  $(BUILD_DIR)/kernel/string.o \
           $(BUILD_DIR)/font.o 
 
 
@@ -104,7 +108,8 @@ run: $(TARGET)
 					   -device sdhci-pci,id=sdhci \
 						-drive if=none,id=sd0,format=raw,file=sdcard.img \
 						-device sd-card,drive=sd0,bus=sd-bus \
-						-trace 'sdhci_*' 2> sdhci.log
+						-chardev file,id=dbg,path=debug.log \
+						-device isa-debugcon,iobase=0xe9,chardev=dbg
 
 clean:
 	rm -rf $(BUILD_DIR) $(TARGET)

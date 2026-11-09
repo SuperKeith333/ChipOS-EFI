@@ -36,4 +36,14 @@ static inline uint64_t readCr3(void) {
     return result;
 }
 
+
+static inline void debug_char(char c) {
+    outb(0xE9, c);
+}
+
+static void debug_hex(uint32_t v) {
+    for (int i = 28; i >= 0; i -= 4)
+        outb(0xE9, "0123456789ABCDEF"[(v >> i) & 0xF]);
+    outb(0xE9, '\n');
+}
 #endif

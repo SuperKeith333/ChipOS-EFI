@@ -21,6 +21,7 @@ void kernel_print_hex16(BootInfo* binfo, unsigned short value, unsigned int colo
 unsigned char kernel_get_scancode(void);
 void kernel_play_sound(unsigned int frequency);
 void kernel_stop_sound(void);
+void renderer_draw_line(BootInfo* binfo, unsigned int x, unsigned int y, unsigned int width, unsigned int color);
 
 
 #endif

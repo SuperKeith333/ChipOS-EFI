@@ -22,6 +22,7 @@
 #include <string.h>
 #include "ff.h"			/* Basic definitions and declarations of API */
 #include "diskio.h"		/* Declarations of MAI */
+#include "io.h"
 
 /*--------------------------------------------------------------------------
 
@@ -3476,6 +3477,7 @@ static FRESULT mount_volume (	/* FR_OK(0): successful, !=0: an error occurred */
 	vol = get_ldnumber(path);
 	if (vol < 0) return FR_INVALID_DRIVE;
 
+
 	/* Check if the filesystem object is valid or not */
 	fs = FatFs[vol];					/* Get pointer to the filesystem object */
 	if (!fs) return FR_NOT_ENABLED;		/* Is the filesystem object available? */
@@ -3746,7 +3748,6 @@ FRESULT f_mount (
 	int vol;
 	FRESULT res;
 	const TCHAR *rp = path;
-
 
 	/* Get volume ID (logical drive number) */
 	vol = get_ldnumber(&rp);
