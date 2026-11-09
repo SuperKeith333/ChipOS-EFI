@@ -6,13 +6,30 @@
 #include "renderer.h"
 
 typedef struct {
+    char name[128];
+    UINT size;
+    FILINFO* fileInfo;
+} file;
+
+typedef struct folder {
+    char name[128];
+    struct folder* folders;
+    file* files;
+    uint8_t folderCount;
+    uint8_t fileCount;
+    DIR* dir;
+} folder;
+
+typedef struct {
     FATFS* fatFs;
     DIR* rootDir;
     FILINFO* fileInfo;
+    folder rootFolder;
     uint8_t selectedFile;
     uint8_t filesFound;
     _Bool readSelectedFile;
 } fileData;
+
 
 void fileScreen_start(screen* _screen, void* input) {}
 
